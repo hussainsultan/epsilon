@@ -81,6 +81,7 @@
 
   # Install packages
   home.packages = with pkgs; [
+    direnv
     eza
     fd
     ripgrep

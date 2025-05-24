@@ -22,7 +22,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     if ! command -v darwin-rebuild &> /dev/null; then
         echo "Installing nix-darwin..."
         echo "This will require sudo access for system activation..."
-        nix run nix-darwin -- switch --flake "$DOTFILES_DIR"
+        sudo nix run nix-darwin --extra-experimental-features nix-command  --extra-experimental-features flakes -- switch --flake "$DOTFILES_DIR"
     else
         echo "Rebuilding darwin configuration..."
         echo "This will require sudo access for system activation..."

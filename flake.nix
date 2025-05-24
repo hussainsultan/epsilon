@@ -11,19 +11,28 @@
     };
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }: {
-    darwinConfigurations."HUSSAINs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
-      # Explicitly specify system instead of using builtins.currentSystem
-      system = "aarch64-darwin";
-      modules = [
-        ./configuration.nix
-        home-manager.darwinModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.users.hussainsultan = import ./home.nix;
-        }
-      ];
+  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
+    let
+      getComputerName = pkgs: pkgs.runCommand "computer-name" {} ''
+        ${pkgs.darwin.system_cmds}/bin/scutil --get ComputerName > $out
+      '';
+
+      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+      computerName = builtins.readFile (getComputerName pkgs);
+      cleanComputerName = builtins.replaceStrings ["\n"] [""] computerName;
+    in
+    {
+      darwinConfigurations."lets-mac" = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [
+          ./configuration.nix
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.hussainsultan = import ./home.nix;
+          }
+        ];
+      };
     };
-  };
 }
