@@ -1,0 +1,14 @@
+Host lets-pop
+  Hostname 100.83.189.74
+  User hussainsultan
+  RemoteForward /run/user/1000/yubikey-agent/yubikey-agent.sock /opt/homebrew/var/run/yubikey-agent.sock
+  ForwardAgent yes
+
+Host lets-mac
+  Hostname 100.127.149.87
+  User hussainsultan
+  RemoteForward /run/user/1000/yubikey-agent/yubikey-agent.sock /opt/homebrew/var/run/yubikey-agent.sock
+  ForwardAgent yes
+
+Host *
+	IdentityAgent /Users/hussainsultan/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
