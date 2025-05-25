@@ -14,7 +14,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # Check if Nix is installed
     if ! command -v nix &> /dev/null; then
         echo "❌ Nix is not installed. Please install Nix first:"
-        echo "curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
+        echo "Use determinate https://dtr.mn/determinate-nix"
         exit 1
     fi
 
