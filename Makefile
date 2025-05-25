@@ -13,12 +13,12 @@ help:
 
 install:
 	@echo "Installing dotfiles..."
-	@scripts/install.sh
+	COMPUTER_NAME="$(HOSTNAME)" scripts/install.sh
 
 rebuild:
 	@echo "Rebuilding nix-darwin configuration..."
 	@echo "This requires sudo access for system activation..."
-	sudo darwin-rebuild switch --flake $(DOTFILES_DIR)
+	COMPUTER_NAME="$(HOSTNAME)"  sudo darwin-rebuild switch --flake $(DOTFILES_DIR)
 
 clean:
 	@echo "Cleaning up old generations..."

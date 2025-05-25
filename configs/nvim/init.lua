@@ -1,9 +1,8 @@
--- init.lua - Minimal Neovim Configuration
 -- Place this in ~/.config/nvim/init.lua
 
 -- Basic Settings
 vim.opt.number = true
-vim.opt.relativenumber = true
+vim.opt.relativenumber = false
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 2
 vim.opt.tabstop = 2
@@ -47,7 +46,23 @@ local plugins = {
     "folke/tokyonight.nvim",
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme("tokyonight-night")
+      require("tokyonight").setup({
+        style = "moon", -- softer variant
+        transparent = true, -- transparent background
+        styles = {
+          comments = { italic = true },
+          keywords = { italic = true },
+          sidebars = "dark", -- softer sidebar color
+          floats = "dark",
+        },
+        on_highlights = function(hl, c)
+          hl.CursorLine = { bg = c.bg_highlight } -- subtle cursor line
+          hl.LineNr = { fg = c.dark5 }            -- less prominent line numbers
+          hl.SignColumn = { bg = c.none }         -- transparent sign column
+          hl.NormalFloat = { bg = c.bg_dark, blend = 10 } -- softer floats
+        end,
+      })
+      vim.cmd.colorscheme("tokyonight-moon")
     end,
   },
 
@@ -248,30 +263,9 @@ keymap("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "Find buffers" 
 keymap("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Help tags" })
 keymap("n", "<leader>fr", "<cmd>Telescope oldfiles<CR>", { desc = "Recent files" })
 
--- LSP mappings (will be added back when LSP is working)
--- keymap("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
--- keymap("n", "gr", vim.lsp.buf.references, { desc = "Go to references" })
--- keymap("n", "K", vim.lsp.buf.hover, { desc = "Hover documentation" })
--- keymap("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename" })
--- keymap("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
--- keymap("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
--- keymap("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
-
 -- Buffer navigation
 keymap("n", "<S-h>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 keymap("n", "<S-l>", "<cmd>bnext<CR>", { desc = "Next buffer" })
-
--- Window navigation (now handled by tmux-navigation plugin)
--- keymap("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
--- keymap("n", "<C-j>", "<C-w>j", { desc = "Move to bottom window" })
--- keymap("n", "<C-k>", "<C-w>k", { desc = "Move to top window" })
--- keymap("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
-
--- Resize windows
-keymap("n", "<C-Up>", "<cmd>resize +2<CR>", { desc = "Increase window height" })
-keymap("n", "<C-Down>", "<cmd>resize -2<CR>", { desc = "Decrease window height" })
-keymap("n", "<C-Left>", "<cmd>vertical resize -2<CR>", { desc = "Decrease window width" })
-keymap("n", "<C-Right>", "<cmd>vertical resize +2<CR>", { desc = "Increase window width" })
 
 -- Visual mode mappings
 keymap("v", "<", "<gv", { desc = "Indent left" })
@@ -301,23 +295,4 @@ autocmd("BufWritePre", {
   group = "TrimWhitespace",
   pattern = "*",
   command = "%s/\\s\\+$//e",
-})
-
--- LSP diagnostic configuration (commented out until LSP is working)
-vim.diagnostic.config({
-  virtual_text = {
-    prefix = "●",
-  },
-  signs = true,
-  underline = true,
-  update_in_insert = false,
-  severity_sort = true,
-})
-
-vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-  border = "rounded",
-})
-
-vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-  border = "rounded",
 })

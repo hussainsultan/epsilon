@@ -12,17 +12,8 @@
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
-    let
-      getComputerName = pkgs: pkgs.runCommand "computer-name" {} ''
-        ${pkgs.darwin.system_cmds}/bin/scutil --get ComputerName > $out
-      '';
-
-      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-      computerName = builtins.readFile (getComputerName pkgs);
-      cleanComputerName = builtins.replaceStrings ["\n"] [""] computerName;
-    in
     {
-      darwinConfigurations."lets-mac" = nix-darwin.lib.darwinSystem {
+      darwinConfigurations."HUSSAINs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         modules = [
           ./configuration.nix
