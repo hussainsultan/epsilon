@@ -1,5 +1,3 @@
--- Place this in ~/.config/nvim/init.lua
-
 -- Basic Settings
 vim.opt.number = true
 vim.opt.relativenumber = false

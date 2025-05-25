@@ -6,10 +6,74 @@
 
   programs.tmux = {
     enable = true;
-  };
+    prefix = "C-s";
+    mouse = true;
+    keyMode = "vi";
+    escapeTime = 0;
+    shell = "/bin/zsh";
+    terminal = "tmux-256color";
+    plugins = with pkgs.tmuxPlugins; [
+      vim-tmux-navigator
+      {
+        plugin = catppuccin;
+        extraConfig = ''
+          set -g @catppuccin_window_left_separator ""
+          set -g @catppuccin_window_right_separator " "
+          set -g @catppuccin_window_middle_separator " █"
+          set -g @catppuccin_window_number_position "right"
+          set -g @catppuccin_window_default_fill "number"
+          set -g @catppuccin_window_default_text "#W"
+          set -g @catppuccin_window_current_fill "number"
+          set -g @catppuccin_window_current_text "#W"
+          set -g @catppuccin_status_modules_right "directory session"
+          set -g @catppuccin_status_left_separator  " "
+          set -g @catppuccin_status_right_separator ""
+          set -g @catppuccin_status_right_separator_inverse "no"
+          set -g @catppuccin_status_fill "icon"
+          set -g @catppuccin_status_connect_separator "no"
+          set -g @catppuccin_directory_text "#{pane_current_path}"
+        '';
+      }
+      sensible
+    ];
+    extraConfig = ''
+      # Custom key bindings
+      unbind r
+      bind r source-file ~/.config/tmux/tmux.conf
+      bind-key h select-pane -L
+      bind-key j select-pane -D
+      bind-key k select-pane -U
+      bind-key l select-pane -R
 
-  # Link tmux.conf file
-  home.file.".tmux.conf".source = ./configs/tmux/tmux.conf;
+      # In extraConfig, replace the PATH line with:
+      set-environment -g PATH "${config.home.homeDirectory}/.nix-profile/bin:/opt/homebrew/bin:/usr/local/bin:/bin:/usr/bin"
+      # Status bar position
+      set-option -g status-position top
+
+      # Terminal features and colors
+      set -a terminal-features '*:RGB'
+      set -a terminal-features '*:usstyle'
+      set -ga terminal-overrides ",alacritty:RGB"
+      set -ga terminal-overrides ",*256col*:Tc"
+
+      # Fix cursor shape https://github.com/neovim/neovim/issues/5096#issuecomment-469027417
+      set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
+
+      # Undercurl support
+      set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
+
+      # Underscore colours - needs tmux-3.0
+      set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'
+
+      # Status interval
+      set -g status-interval 0
+
+      # Update environment
+      set-option -ga update-environment " UPTERM_ADMIN_SOCKET"
+      set-option -g default-shell "${pkgs.zsh}/bin/zsh"
+      set-option -g default-command "${pkgs.zsh}/bin/zsh"
+    '';
+  };
 
   home.sessionPath = [
     "/run/current-system/sw/bin"
@@ -95,12 +159,6 @@
     yq
     tree
   ];
-
-  programs.direnv = {
-    enable = true;
-    enableZshIntegration = true;
-    nix-direnv.enable = true;
-  };
 
   programs.home-manager.enable = true;
 }
