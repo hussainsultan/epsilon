@@ -238,6 +238,50 @@ local plugins = {
       })
     end,
   },
+  {
+    "ojroques/vim-oscyank",
+    lazy = false,
+    config = function()
+      -- OSC 52 clipboard integration for SSH using vim-oscyank
+      if os.getenv("SSH_CONNECTION") or os.getenv("SSH_CLIENT") or os.getenv("SSH_TTY") then
+        -- Auto-copy to system clipboard when yanking in SSH
+        vim.api.nvim_create_autocmd('TextYankPost', {
+          callback = function()
+            if vim.v.event.operator == 'y' and vim.v.event.regname == '' then
+              vim.cmd('OSCYankReg "')
+            end
+          end,
+        })
+
+        -- Set up clipboard provider (alternative approach)
+        vim.g.clipboard = {
+          name = 'OSC 52',
+          copy = {
+            ['+'] = function(lines)
+              local text = table.concat(lines, '\n')
+              vim.fn.OSCYank(text)
+            end,
+            ['*'] = function(lines)
+              local text = table.concat(lines, '\n')
+              vim.fn.OSCYank(text)
+            end,
+          },
+          paste = {
+            ['+'] = function()
+              return vim.fn.split(vim.fn.getreg('+'), '\n')
+            end,
+            ['*'] = function()
+              return vim.fn.split(vim.fn.getreg('*'), '\n')
+            end,
+          },
+        }
+      end
+
+      -- Manual keymaps for explicit copying
+      vim.keymap.set('v', '<leader>c', ':OSCYank<CR>', { desc = 'Copy selection to system clipboard via OSC 52' })
+      vim.keymap.set('n', '<leader>cc', 'yy:OSCYankReg "<CR>', { desc = 'Copy line to system clipboard via OSC 52' })
+    end,
+  },
 }
 
 -- Setup plugins
