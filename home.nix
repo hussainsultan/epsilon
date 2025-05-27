@@ -64,6 +64,13 @@
       set-option -ga update-environment " LOCALE_ARCHIVE"
       set-option -ga update-environment " UPTERM_ADMIN_SOCKET"
 
+      # OSC 52 clipboard support for tmux
+      set -g set-clipboard on
+      set -g allow-passthrough on
+      set -as terminal-features ',*:clipboard'
+
+      # Set proper terminal type
+      set -g default-terminal "tmux-256color"
       # Status bar position
       set-option -g status-position top
 

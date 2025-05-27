@@ -1,3 +1,4 @@
+
 -- Basic Settings
 vim.opt.number = true
 vim.opt.relativenumber = false
@@ -63,7 +64,6 @@ local plugins = {
       vim.cmd.colorscheme("tokyonight-moon")
     end,
   },
-
   -- Treesitter for syntax highlighting
   {
     "nvim-treesitter/nvim-treesitter",
@@ -242,44 +242,58 @@ local plugins = {
     "ojroques/vim-oscyank",
     lazy = false,
     config = function()
-      -- OSC 52 clipboard integration for SSH using vim-oscyank
-      if os.getenv("SSH_CONNECTION") or os.getenv("SSH_CLIENT") or os.getenv("SSH_TTY") then
-        -- Auto-copy to system clipboard when yanking in SSH
-        vim.api.nvim_create_autocmd('TextYankPost', {
-          callback = function()
-            if vim.v.event.operator == 'y' and vim.v.event.regname == '' then
-              vim.cmd('OSCYankReg "')
-            end
-          end,
-        })
-
-        -- Set up clipboard provider (alternative approach)
-        vim.g.clipboard = {
-          name = 'OSC 52',
-          copy = {
-            ['+'] = function(lines)
-              local text = table.concat(lines, '\n')
-              vim.fn.OSCYank(text)
-            end,
-            ['*'] = function(lines)
-              local text = table.concat(lines, '\n')
-              vim.fn.OSCYank(text)
-            end,
-          },
-          paste = {
-            ['+'] = function()
-              return vim.fn.split(vim.fn.getreg('+'), '\n')
-            end,
-            ['*'] = function()
-              return vim.fn.split(vim.fn.getreg('*'), '\n')
-            end,
-          },
-        }
+      local function debug_env()
+        print("SSH_CONNECTION:", os.getenv("SSH_CONNECTION"))
+        print("TMUX:", os.getenv("TMUX"))
+        print("TERM:", os.getenv("TERM"))
       end
 
-      -- Manual keymaps for explicit copying
-      vim.keymap.set('v', '<leader>c', ':OSCYank<CR>', { desc = 'Copy selection to system clipboard via OSC 52' })
-      vim.keymap.set('n', '<leader>cc', 'yy:OSCYankReg "<CR>', { desc = 'Copy line to system clipboard via OSC 52' })
+      local function is_ssh()
+        return os.getenv("SSH_CONNECTION") or os.getenv("SSH_CLIENT") or os.getenv("SSH_TTY")
+      end
+
+      local function is_tmux()
+        return os.getenv("TMUX") ~= nil
+      end
+
+      if is_ssh() or is_tmux() then
+        vim.g.oscyank_term = 'default'
+        vim.g.oscyank_silent = false
+        vim.g.oscyank_max_length = 100000
+
+        -- Don't auto-yank for now, let's test manual first
+        -- vim.api.nvim_create_autocmd('TextYankPost', {
+        --   group = vim.api.nvim_create_augroup('OSCYank', { clear = true }),
+        --   callback = function()
+        --     if vim.v.event.operator == 'y' and vim.v.event.regname == '' then
+        --       vim.defer_fn(function()
+        --         vim.cmd('OSCYankRegister "')
+        --       end, 10)
+        --     end
+        --   end,
+        -- })
+
+        -- Keep normal clipboard disabled to avoid conflicts
+        vim.opt.clipboard = ""
+      else
+        -- Use normal clipboard integration for local sessions
+        vim.opt.clipboard = "unnamedplus"
+      end
+
+      -- Manual keymaps with better feedback
+      vim.keymap.set('v', '<leader>c', function()
+        -- Get the visual selection
+        vim.cmd('normal! y')
+        local text = vim.fn.getreg('"')
+        vim.fn.OSCYank(text)
+        print('OSC Yank: Copied selection to system clipboard')
+      end, { desc = 'Copy selection via OSC 52' })
+
+      vim.keymap.set('n', '<leader>cc', function()
+        local line = vim.api.nvim_get_current_line()
+        vim.fn.OSCYank(line)
+        print('OSC Yank: Copied line to system clipboard')
+      end, { desc = 'Copy line via OSC 52' })
     end,
   },
 }
