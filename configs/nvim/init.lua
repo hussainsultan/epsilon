@@ -315,7 +315,7 @@ keymap("v", ">", ">gv", { desc = "Indent right" })
 
 -- Tunnell mappings
 keymap("n", "<leader>tt", "<cmd>TunnellCell<CR>", { desc = "Tunnell cell" })
-keymap("v", "<leader>tt", "<cmd>TunnellRange<CR>", { desc = "Tunnell range" })
+keymap("v", "<leader>tt", ":TunnellRange<CR>", { desc = "Tunnell range" })
 keymap("n", "<leader>tc", "<cmd>TunnellConfig<CR>", { desc = "Tunnell config" })
 
 -- Autocommands
