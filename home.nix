@@ -74,8 +74,7 @@
       set-option -g default-command "${pkgs.zsh}/bin/zsh"
     '';
   };
-
-  home.sessionPath = [
+home.sessionPath = [
     "/run/current-system/sw/bin"
     "${config.home.homeDirectory}/.nix-profile/bin"
     "/usr/local/bin"
@@ -88,6 +87,8 @@
   programs.zsh = {
     enable = true;
     shellAliases = {
+      vim= "nvim";
+      cd = "z";
       ls = "eza --color=always --group-directories-first";
       ll = "eza -l --color=always --group-directories-first --git";
       la = "eza -la --color=always --group-directories-first --git";
@@ -135,6 +136,11 @@
     settings = builtins.fromTOML (builtins.readFile ./configs/starship/starship.toml);
   };
 
+  programs.zoxide = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
   programs.neovim = {
     enable = true;
     defaultEditor = true;
@@ -158,6 +164,8 @@
     jq
     yq
     tree
+    asciinema
+    presenterm
   ];
 
   programs.direnv = {
