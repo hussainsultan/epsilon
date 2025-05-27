@@ -70,8 +70,8 @@
 
       # Update environment
       set-option -ga update-environment " UPTERM_ADMIN_SOCKET"
-      set-option -g default-shell "${pkgs.zsh}/bin/zsh"
-      set-option -g default-command "${pkgs.zsh}/bin/zsh"
+      set-option -g default-shell "/bin/zsh"
+      set-option -g default-command "/bin/zsh"
     '';
   };
 home.sessionPath = [
@@ -151,7 +151,6 @@ home.sessionPath = [
 
   # Install packages
   home.packages = with pkgs; [
-    direnv
     eza
     fd
     ripgrep
@@ -166,6 +165,8 @@ home.sessionPath = [
     tree
     asciinema
     presenterm
+    colima
+    docker
   ];
 
   programs.direnv = {

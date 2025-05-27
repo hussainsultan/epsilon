@@ -13,7 +13,7 @@
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
     {
-      darwinConfigurations."HUSSAINs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
+      darwinConfigurations."lets-mac" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         modules = [
           ./configuration.nix
