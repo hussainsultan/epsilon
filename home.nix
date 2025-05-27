@@ -10,7 +10,6 @@
     mouse = true;
     keyMode = "vi";
     escapeTime = 0;
-    shell = "/bin/zsh";
     terminal = "tmux-256color";
     plugins = with pkgs.tmuxPlugins; [
       vim-tmux-navigator
@@ -45,8 +44,26 @@
       bind-key k select-pane -U
       bind-key l select-pane -R
 
-      # In extraConfig, replace the PATH line with:
-      set-environment -g PATH "${config.home.homeDirectory}/.nix-profile/bin:/opt/homebrew/bin:/usr/local/bin:/bin:/usr/bin"
+      # Override default pane creation to ensure environment
+      bind-key '"' split-window -v -c "#{pane_current_path}"
+      bind-key '%' split-window -h -c "#{pane_current_path}"
+      bind-key 'c' new-window -c "#{pane_current_path}"
+
+      set-environment -g PATH "/run/current-system/sw/bin:${config.home.homeDirectory}/.nix-profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/nix/var/nix/profiles/default/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+      set-option -g default-command "${pkgs.zsh}/bin/zsh -l"
+      set-option -g default-shell "${pkgs.zsh}/bin/zsh"
+
+      # Update environment variables that should be inherited
+      set-option -ga update-environment " NIX_PATH"
+      set-option -ga update-environment " NIX_PROFILES"
+      set-option -ga update-environment " NIX_SSL_CERT_FILE"
+      set-option -ga update-environment " NIX_USER_PROFILE_DIR"
+      set-option -ga update-environment " XDG_DATA_DIRS"
+      set-option -ga update-environment " XDG_CONFIG_DIRS"
+      set-option -ga update-environment " LOCALE_ARCHIVE"
+      set-option -ga update-environment " UPTERM_ADMIN_SOCKET"
+
       # Status bar position
       set-option -g status-position top
 
@@ -67,14 +84,10 @@
 
       # Status interval
       set -g status-interval 0
-
-      # Update environment
-      set-option -ga update-environment " UPTERM_ADMIN_SOCKET"
-      set-option -g default-shell "/bin/zsh"
-      set-option -g default-command "/bin/zsh"
     '';
   };
-home.sessionPath = [
+
+  home.sessionPath = [
     "/run/current-system/sw/bin"
     "${config.home.homeDirectory}/.nix-profile/bin"
     "/usr/local/bin"
@@ -83,6 +96,11 @@ home.sessionPath = [
     "/usr/sbin"
     "/sbin"
   ];
+
+  # Add session variables for Nix
+  home.sessionVariables = {
+    NIX_PATH = "$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels";
+  };
 
   programs.zsh = {
     enable = true;
@@ -151,6 +169,7 @@ home.sessionPath = [
 
   # Install packages
   home.packages = with pkgs; [
+    tmux  # Add tmux to ensure it's available in new panes
     eza
     fd
     ripgrep
