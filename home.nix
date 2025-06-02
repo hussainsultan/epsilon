@@ -97,7 +97,6 @@
   home.sessionPath = [
     "/run/current-system/sw/bin"
     "${config.home.homeDirectory}/.nix-profile/bin"
-    "/usr/local/bin"
     "/usr/bin"
     "/bin"
     "/usr/sbin"
@@ -197,6 +196,7 @@
     presenterm
     colima
     docker
+    nodejs_24
   ];
 
   programs.direnv = {

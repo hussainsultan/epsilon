@@ -1,4 +1,3 @@
-
 -- Basic Settings
 vim.opt.number = true
 vim.opt.relativenumber = false
@@ -64,6 +63,7 @@ local plugins = {
       vim.cmd.colorscheme("tokyonight-moon")
     end,
   },
+
   -- Treesitter for syntax highlighting
   {
     "nvim-treesitter/nvim-treesitter",
@@ -92,6 +92,71 @@ local plugins = {
           file_ignore_patterns = { "node_modules", ".git/" },
         },
       })
+    end,
+  },
+
+  -- Harpoon for quick file navigation
+  {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      local harpoon = require("harpoon")
+      harpoon:setup()
+
+      -- Basic telescope configuration for harpoon
+      local conf = require("telescope.config").values
+      local function toggle_telescope(harpoon_files)
+        local file_paths = {}
+        for _, item in ipairs(harpoon_files.items) do
+          table.insert(file_paths, item.value)
+        end
+
+        require("telescope.pickers").new({}, {
+          prompt_title = "Harpoon",
+          finder = require("telescope.finders").new_table({
+            results = file_paths,
+          }),
+          previewer = conf.file_previewer({}),
+          sorter = conf.generic_sorter({}),
+        }):find()
+      end
+
+      -- Harpoon keymaps
+      vim.keymap.set("n", "<leader>ha", function() harpoon:list():add() end, { desc = "Harpoon add file" })
+      vim.keymap.set("n", "<leader>hh", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon quick menu" })
+      vim.keymap.set("n", "<leader>ht", function() toggle_telescope(harpoon:list()) end, { desc = "Harpoon telescope" })
+
+      -- Quick navigation to harpooned files
+      vim.keymap.set("n", "<leader>1", function() harpoon:list():select(1) end, { desc = "Harpoon file 1" })
+      vim.keymap.set("n", "<leader>2", function() harpoon:list():select(2) end, { desc = "Harpoon file 2" })
+      vim.keymap.set("n", "<leader>3", function() harpoon:list():select(3) end, { desc = "Harpoon file 3" })
+      vim.keymap.set("n", "<leader>4", function() harpoon:list():select(4) end, { desc = "Harpoon file 4" })
+
+      -- Toggle previous & next buffers stored within Harpoon list
+      vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end, { desc = "Harpoon prev" })
+      vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end, { desc = "Harpoon next" })
+    end,
+  },
+
+  -- GitHub Copilot
+  {
+    "github/copilot.vim",
+    config = function()
+      -- Disable default tab mapping to avoid conflicts with nvim-cmp
+      vim.g.copilot_no_tab_map = true
+      vim.g.copilot_assume_mapped = true
+
+      -- Custom keymaps for copilot
+      vim.keymap.set('i', '<C-J>', 'copilot#Accept("\\<CR>")', {
+        expr = true,
+        replace_keycodes = false,
+        desc = "Accept Copilot suggestion"
+      })
+      vim.keymap.set('i', '<C-L>', '<Plug>(copilot-accept-word)', { desc = "Accept Copilot word" })
+      vim.keymap.set('i', '<C-K>', '<Plug>(copilot-next)', { desc = "Next Copilot suggestion" })
+      vim.keymap.set('i', '<C-H>', '<Plug>(copilot-previous)', { desc = "Previous Copilot suggestion" })
+      vim.keymap.set('i', '<C-X>', '<Plug>(copilot-dismiss)', { desc = "Dismiss Copilot suggestion" })
     end,
   },
 
@@ -177,11 +242,99 @@ local plugins = {
     end,
   },
 
-  -- Git signs
+  -- Enhanced Git signs with more functionality
   {
     "lewis6991/gitsigns.nvim",
     config = function()
-      require("gitsigns").setup()
+      require("gitsigns").setup({
+        signs = {
+          add          = { text = '┃' },
+          change       = { text = '┃' },
+          delete       = { text = '_' },
+          topdelete    = { text = '‾' },
+          changedelete = { text = '~' },
+          untracked    = { text = '┆' },
+        },
+        signcolumn = true,
+        numhl = false,
+        linehl = false,
+        word_diff = false,
+        watch_gitdir = {
+          follow_files = true
+        },
+        auto_attach = true,
+        attach_to_untracked = false,
+        current_line_blame = false,
+        current_line_blame_opts = {
+          virt_text = true,
+          virt_text_pos = 'eol',
+          delay = 1000,
+          ignore_whitespace = false,
+          virt_text_priority = 100,
+        },
+        preview_config = {
+          border = 'single',
+          style = 'minimal',
+          relative = 'cursor',
+          row = 0,
+          col = 1
+        },
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation
+          map('n', ']c', function()
+            if vim.wo.diff then return ']c' end
+            vim.schedule(function() gs.next_hunk() end)
+            return '<Ignore>'
+          end, {expr=true, desc="Next git hunk"})
+
+          map('n', '[c', function()
+            if vim.wo.diff then return '[c' end
+            vim.schedule(function() gs.prev_hunk() end)
+            return '<Ignore>'
+          end, {expr=true, desc="Previous git hunk"})
+
+          -- Actions
+          map('n', '<leader>gs', gs.stage_hunk, { desc = "Stage hunk" })
+          map('n', '<leader>gr', gs.reset_hunk, { desc = "Reset hunk" })
+          map('v', '<leader>gs', function() gs.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = "Stage hunk" })
+          map('v', '<leader>gr', function() gs.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end, { desc = "Reset hunk" })
+          map('n', '<leader>gS', gs.stage_buffer, { desc = "Stage buffer" })
+          map('n', '<leader>gu', gs.undo_stage_hunk, { desc = "Undo stage hunk" })
+          map('n', '<leader>gR', gs.reset_buffer, { desc = "Reset buffer" })
+          map('n', '<leader>gp', gs.preview_hunk, { desc = "Preview hunk" })
+          map('n', '<leader>gb', function() gs.blame_line{full=true} end, { desc = "Git blame line" })
+          map('n', '<leader>gtb', gs.toggle_current_line_blame, { desc = "Toggle git blame" })
+          map('n', '<leader>gd', gs.diffthis, { desc = "Git diff this" })
+          map('n', '<leader>gD', function() gs.diffthis('~') end, { desc = "Git diff this ~" })
+          map('n', '<leader>gtd', gs.toggle_deleted, { desc = "Toggle deleted" })
+
+          -- Text object
+          map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = "Select git hunk" })
+        end
+      })
+    end,
+  },
+
+  -- Fugitive for comprehensive git operations
+  {
+    "tpope/vim-fugitive",
+    config = function()
+      -- Git keymaps using Fugitive
+      vim.keymap.set("n", "<leader>gg", "<cmd>Git<CR>", { desc = "Git status" })
+      vim.keymap.set("n", "<leader>gc", "<cmd>Git commit<CR>", { desc = "Git commit" })
+      vim.keymap.set("n", "<leader>gp", "<cmd>Git push<CR>", { desc = "Git push" })
+      vim.keymap.set("n", "<leader>gl", "<cmd>Git pull<CR>", { desc = "Git pull" })
+      vim.keymap.set("n", "<leader>gf", "<cmd>Git fetch<CR>", { desc = "Git fetch" })
+      vim.keymap.set("n", "<leader>gB", "<cmd>Git branch<CR>", { desc = "Git branch" })
+      vim.keymap.set("n", "<leader>gL", "<cmd>Git log --oneline<CR>", { desc = "Git log" })
     end,
   },
 
@@ -190,6 +343,14 @@ local plugins = {
     "folke/which-key.nvim",
     config = function()
       require("which-key").setup()
+
+      -- Register git-related key groups
+      require("which-key").register({
+        ["<leader>g"] = { name = "+git" },
+        ["<leader>h"] = { name = "+harpoon" },
+        ["<leader>f"] = { name = "+find" },
+        ["<leader>t"] = { name = "+tunnell" },
+      })
     end,
   },
 
@@ -197,9 +358,76 @@ local plugins = {
   {
     "folke/flash.nvim",
     keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      -- More intuitive keybindings for Flash
+      { "<leader>j", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash Jump" },
+      { "<leader>J", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "<leader>/", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash Jump" },
+
+      -- Alternative: use 'm' for motion (doesn't conflict with marks since this is different)
+      { "m", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash Jump" },
+      { "M", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+
+      -- Search integration
+      { "<leader>fs", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash Search" },
     },
+    config = function()
+      require("flash").setup({
+        labels = "asdfghjklqwertyuiopzxcvbnm",
+        search = {
+          multi_window = true,
+          forward = true,
+          wrap = true,
+        },
+        jump = {
+          jumplist = true,
+          pos = "start",
+          history = false,
+          register = false,
+          nohlsearch = false,
+        },
+        label = {
+          uppercase = true,
+          exclude = "",
+          current = true,
+          after = true,
+          before = false,
+          style = "overlay",
+        },
+        highlight = {
+          backdrop = true,
+          matches = true,
+          priority = 5000,
+          groups = {
+            match = "FlashMatch",
+            current = "FlashCurrent",
+            backdrop = "FlashBackdrop",
+            label = "FlashLabel",
+          },
+        },
+        modes = {
+          search = {
+            enabled = true,
+            highlight = { backdrop = false },
+            jump = { history = true, register = true, nohlsearch = true },
+          },
+          char = {
+            enabled = true,
+            config = function(opts)
+              opts.autohide = opts.autohide or (vim.fn.mode(true):find("no") and vim.v.operator == "y")
+            end,
+            jump = { register = false },
+          },
+          treesitter = {
+            labels = "abcdefghijklmnopqrstuvwxyz",
+            jump = { pos = "range" },
+            highlight = {
+              backdrop = false,
+              matches = false,
+            },
+          },
+        },
+      })
+    end,
   },
 
   -- Autopairs
@@ -238,6 +466,8 @@ local plugins = {
       })
     end,
   },
+
+  -- OSC Yank for remote clipboard
   {
     "ojroques/vim-oscyank",
     lazy = false,
@@ -260,18 +490,6 @@ local plugins = {
         vim.g.oscyank_term = 'default'
         vim.g.oscyank_silent = false
         vim.g.oscyank_max_length = 100000
-
-        -- Don't auto-yank for now, let's test manual first
-        -- vim.api.nvim_create_autocmd('TextYankPost', {
-        --   group = vim.api.nvim_create_augroup('OSCYank', { clear = true }),
-        --   callback = function()
-        --     if vim.v.event.operator == 'y' and vim.v.event.regname == '' then
-        --       vim.defer_fn(function()
-        --         vim.cmd('OSCYankRegister "')
-        --       end, 10)
-        --     end
-        --   end,
-        -- })
 
         -- Keep normal clipboard disabled to avoid conflicts
         vim.opt.clipboard = ""
@@ -319,7 +537,7 @@ keymap("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "Find buffers" 
 keymap("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Help tags" })
 keymap("n", "<leader>fr", "<cmd>Telescope oldfiles<CR>", { desc = "Recent files" })
 
--- Buffer navigation
+-- Buffer navigation (keeping original for compatibility, Harpoon provides better workflow)
 keymap("n", "<S-h>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 keymap("n", "<S-l>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 
