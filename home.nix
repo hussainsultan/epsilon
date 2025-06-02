@@ -174,9 +174,12 @@
     extraLuaConfig = builtins.readFile ./configs/nvim/init.lua;
   };
 
+
   # Install packages
   home.packages = with pkgs; [
-    tmux  # Add tmux to ensure it's available in new panes
+    tmux
+    watch
+    uv
     eza
     fd
     ripgrep
@@ -184,6 +187,7 @@
     git
     gh
     htop
+    btop
     curl
     wget
     jq
