@@ -303,14 +303,29 @@ local plugins = {
   -- Which-key for keybinding hints
   {
     "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+    },
+    keys = {
+      {
+        "<leader>?",
+        function()
+          require("which-key").show({ global = false })
+        end,
+        desc = "Buffer Local Keymaps (which-key)",
+      },
+    },
     config = function()
-      require("which-key").setup()
+      local wk = require("which-key")
+      wk.setup()
 
-      -- Register git-related key groups
-      require("which-key").register({
-        ["<leader>g"] = { name = "+git" },
-        ["<leader>f"] = { name = "+find" },
-        ["<leader>t"] = { name = "+tunnell" },
+      -- Register your groups
+      wk.add({
+        { "<leader>f", group = "find" },
+        { "<leader>g", group = "git" },
+        { "<leader>t", group = "tunnell" },
       })
     end,
   },
