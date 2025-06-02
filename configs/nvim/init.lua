@@ -94,69 +94,31 @@ local plugins = {
       })
     end,
   },
-
-  -- Harpoon for quick file navigation
-  {
-    "ThePrimeagen/harpoon",
-    branch = "harpoon2",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function()
-      local harpoon = require("harpoon")
-      harpoon:setup()
-
-      -- Basic telescope configuration for harpoon
-      local conf = require("telescope.config").values
-      local function toggle_telescope(harpoon_files)
-        local file_paths = {}
-        for _, item in ipairs(harpoon_files.items) do
-          table.insert(file_paths, item.value)
-        end
-
-        require("telescope.pickers").new({}, {
-          prompt_title = "Harpoon",
-          finder = require("telescope.finders").new_table({
-            results = file_paths,
-          }),
-          previewer = conf.file_previewer({}),
-          sorter = conf.generic_sorter({}),
-        }):find()
-      end
-
-      -- Harpoon keymaps
-      vim.keymap.set("n", "<leader>ha", function() harpoon:list():add() end, { desc = "Harpoon add file" })
-      vim.keymap.set("n", "<leader>hh", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, { desc = "Harpoon quick menu" })
-      vim.keymap.set("n", "<leader>ht", function() toggle_telescope(harpoon:list()) end, { desc = "Harpoon telescope" })
-
-      -- Quick navigation to harpooned files
-      vim.keymap.set("n", "<leader>1", function() harpoon:list():select(1) end, { desc = "Harpoon file 1" })
-      vim.keymap.set("n", "<leader>2", function() harpoon:list():select(2) end, { desc = "Harpoon file 2" })
-      vim.keymap.set("n", "<leader>3", function() harpoon:list():select(3) end, { desc = "Harpoon file 3" })
-      vim.keymap.set("n", "<leader>4", function() harpoon:list():select(4) end, { desc = "Harpoon file 4" })
-
-      -- Toggle previous & next buffers stored within Harpoon list
-      vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end, { desc = "Harpoon prev" })
-      vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end, { desc = "Harpoon next" })
-    end,
-  },
-
-  -- GitHub Copilot
   {
     "github/copilot.vim",
     config = function()
-      -- Disable default tab mapping to avoid conflicts with nvim-cmp
       vim.g.copilot_no_tab_map = true
       vim.g.copilot_assume_mapped = true
 
-      -- Custom keymaps for copilot
-      vim.keymap.set('i', '<C-J>', 'copilot#Accept("\\<CR>")', {
+      vim.g.copilot_filetypes = {
+        ["*"] = true,
+      }
+
+      vim.keymap.set('i', '<C-j>', 'copilot#Accept("\\<CR>")', {
         expr = true,
         replace_keycodes = false,
         desc = "Accept Copilot suggestion"
       })
-      vim.keymap.set('i', '<C-L>', '<Plug>(copilot-accept-word)', { desc = "Accept Copilot word" })
-      vim.keymap.set('i', '<C-K>', '<Plug>(copilot-next)', { desc = "Next Copilot suggestion" })
-      vim.keymap.set('i', '<C-H>', '<Plug>(copilot-previous)', { desc = "Previous Copilot suggestion" })
-      vim.keymap.set('i', '<C-X>', '<Plug>(copilot-dismiss)', { desc = "Dismiss Copilot suggestion" })
+      vim.keymap.set('i', '<C-l>', '<Plug>(copilot-accept-word)', { desc = "Accept Copilot word" })
+      vim.keymap.set('i', '<C-k>', '<Plug>(copilot-next)', { desc = "Next Copilot suggestion" })
+      vim.keymap.set('i', '<C-h>', '<Plug>(copilot-previous)', { desc = "Previous Copilot suggestion" })
+      vim.keymap.set('i', '<C-x>', '<Plug>(copilot-dismiss)', { desc = "Dismiss Copilot suggestion" })
+
+      vim.keymap.set('i', '<Tab>', 'copilot#Accept("\\<Tab>")', {
+        expr = true,
+        replace_keycodes = false,
+        desc = "Accept Copilot suggestion with Tab"
+      })
     end,
   },
 
@@ -347,7 +309,6 @@ local plugins = {
       -- Register git-related key groups
       require("which-key").register({
         ["<leader>g"] = { name = "+git" },
-        ["<leader>h"] = { name = "+harpoon" },
         ["<leader>f"] = { name = "+find" },
         ["<leader>t"] = { name = "+tunnell" },
       })
@@ -466,7 +427,22 @@ local plugins = {
       })
     end,
   },
-
+  {
+    "otavioschwanck/arrow.nvim",
+    dependencies = {
+      { "nvim-tree/nvim-web-devicons" },
+    },
+    opts = {
+      show_icons = true,
+      leader_key = ';',
+      buffer_leader_key = 'm',
+      statusline = {
+        enabled = true,
+        icon_closed = "🏹", -- Custom icon when arrow is closed
+        icon_open = "🎯",   -- Custom icon when arrow is open
+      }
+    }
+  },
   -- OSC Yank for remote clipboard
   {
     "ojroques/vim-oscyank",
@@ -537,7 +513,6 @@ keymap("n", "<leader>fb", "<cmd>Telescope buffers<CR>", { desc = "Find buffers" 
 keymap("n", "<leader>fh", "<cmd>Telescope help_tags<CR>", { desc = "Help tags" })
 keymap("n", "<leader>fr", "<cmd>Telescope oldfiles<CR>", { desc = "Recent files" })
 
--- Buffer navigation (keeping original for compatibility, Harpoon provides better workflow)
 keymap("n", "<S-h>", "<cmd>bprevious<CR>", { desc = "Previous buffer" })
 keymap("n", "<S-l>", "<cmd>bnext<CR>", { desc = "Next buffer" })
 
