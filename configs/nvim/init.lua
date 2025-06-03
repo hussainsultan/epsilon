@@ -406,6 +406,12 @@ local plugins = {
     end,
   },
 
+  {
+    "frankroeder/parrot.nvim",
+    dependencies = { "ibhagwan/fzf-lua", "nvim-lua/plenary.nvim" },
+    opts = {}
+  },
+
   -- Autopairs
   {
     "windwp/nvim-autopairs",
