@@ -464,54 +464,97 @@ local plugins = {
       }
     }
   },
--- OSC Yank for remote clipboard
-{
-  "ojroques/vim-oscyank",
-  lazy = false,
-  config = function()
-    local function is_ssh()
-      return os.getenv("SSH_CONNECTION") or os.getenv("SSH_CLIENT") or os.getenv("SSH_TTY")
-    end
+  -- OSC Yank for remote clipboard
+  {
+    "ojroques/vim-oscyank",
+    lazy = false,
+    config = function()
+      local function is_ssh()
+        return os.getenv("SSH_CONNECTION") or os.getenv("SSH_CLIENT") or os.getenv("SSH_TTY")
+      end
 
-    local function is_tmux()
-      return os.getenv("TMUX") ~= nil
-    end
+      local function is_tmux()
+        return os.getenv("TMUX") ~= nil
+      end
 
-    if is_ssh() then
-      -- SSH sessions: always use OSC 52
-      vim.g.oscyank_term = 'default'
-      vim.g.oscyank_silent = false
-      vim.g.oscyank_max_length = 100000
-      vim.opt.clipboard = ""
-      print("SSH detected - using OSC 52")
+      if is_ssh() then
+        -- SSH sessions: always use OSC 52
+        vim.g.oscyank_term = 'default'
+        vim.g.oscyank_silent = false
+        vim.g.oscyank_max_length = 100000
+        vim.opt.clipboard = ""
+        print("SSH detected - using OSC 52")
 
-    elseif is_tmux() then
-      -- Local tmux: use system clipboard but keep OSC available
-      vim.opt.clipboard = "unnamedplus"
-      vim.g.oscyank_term = 'alacritty'
-      print("Local tmux detected - using system clipboard + OSC fallback")
+      elseif is_tmux() then
+        -- Local tmux: use system clipboard but keep OSC available
+        vim.opt.clipboard = "unnamedplus"
+        vim.g.oscyank_term = 'alacritty'
+        print("Local tmux detected - using system clipboard + OSC fallback")
 
-    else
-      -- Local no tmux: use system clipboard
-      vim.opt.clipboard = "unnamedplus"
-      print("Local session - using system clipboard")
-    end
+      else
+        -- Local no tmux: use system clipboard
+        vim.opt.clipboard = "unnamedplus"
+        print("Local session - using system clipboard")
+      end
 
-    -- Manual OSC yank (works in all scenarios)
-    vim.keymap.set('v', '<leader>c', function()
-      vim.cmd('normal! y')
-      local text = vim.fn.getreg('"')
-      vim.fn.OSCYank(text)
-      print('OSC Yank: Forced copy via OSC 52')
-    end, { desc = 'Force copy via OSC 52' })
+      -- Manual OSC yank (works in all scenarios)
+      vim.keymap.set('v', '<leader>c', function()
+        vim.cmd('normal! y')
+        local text = vim.fn.getreg('"')
+        vim.fn.OSCYank(text)
+        print('OSC Yank: Forced copy via OSC 52')
+      end, { desc = 'Force copy via OSC 52' })
 
-    vim.keymap.set('n', '<leader>cc', function()
-      local line = vim.api.nvim_get_current_line()
-      vim.fn.OSCYank(line)
-      print('OSC Yank: Forced line copy via OSC 52')
-    end, { desc = 'Force line copy via OSC 52' })
-  end,
-},
+      vim.keymap.set('n', '<leader>cc', function()
+        local line = vim.api.nvim_get_current_line()
+        vim.fn.OSCYank(line)
+        print('OSC Yank: Forced line copy via OSC 52')
+      end, { desc = 'Force line copy via OSC 52' })
+    end,
+  },
+  {
+    "mikavilpas/yazi.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      -- check the installation instructions at
+      -- https://github.com/folke/snacks.nvim
+      "folke/snacks.nvim"
+    },
+    keys = {
+      -- 👇 in this section, choose your own keymappings!
+      {
+        "<leader>-",
+        mode = { "n", "v" },
+        "<cmd>Yazi<cr>",
+        desc = "Open yazi at the current file",
+      },
+      {
+        -- Open in the current working directory
+        "<leader>cw",
+        "<cmd>Yazi cwd<cr>",
+        desc = "Open the file manager in nvim's working directory",
+      },
+      {
+        "<c-up>",
+        "<cmd>Yazi toggle<cr>",
+        desc = "Resume the last yazi session",
+      },
+    },
+    ---@type YaziConfig | {}
+    opts = {
+      -- if you want to open yazi instead of netrw, see below for more info
+      open_for_directories = false,
+      keymaps = {
+        show_help = "<f1>",
+      },
+    },
+    -- 👇 if you use `open_for_directories=true`, this is recommended
+    init = function()
+      -- More details: https://github.com/mikavilpas/yazi.nvim/issues/802
+      -- vim.g.loaded_netrw = 1
+      vim.g.loaded_netrwPlugin = 1
+    end,
+  }
 }
 
 -- Setup plugins

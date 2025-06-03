@@ -195,6 +195,7 @@
     colima
     docker
     nodejs_24
+    yazi
   ];
 
   programs.direnv = {
