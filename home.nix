@@ -67,19 +67,17 @@
       # OSC 52 clipboard support for tmux
       set -g set-clipboard on
       set -g allow-passthrough on
+
+      # Specific overrides for Alacritty + tmux
+      set -as terminal-overrides ',alacritty:Ms=\E]52;c;%p2%s\007'
+      set -as terminal-overrides ',tmux*:Ms=\E]52;c;%p2%s\007'
+      set -as terminal-features ',alacritty:clipboard'
       set -as terminal-features ',*:clipboard'
 
-      # Set proper terminal type
-      set -g default-terminal "tmux-256color"
-      # Status bar position
-      set-option -g status-position top
-
-      # Terminal features and colors
-      set -a terminal-features '*:RGB'
-      set -a terminal-features '*:usstyle'
-      set -ga terminal-overrides ",alacritty:RGB"
-      set -ga terminal-overrides ",*256col*:Tc"
-
+      # Force tmux to pass through OSC sequences to the parent terminal
+      set -as terminal-features ',*:Ms=\E]52;c;%p2%s\007'
+      set -g set-clipboard on
+      set -g allow-passthrough on
       # Fix cursor shape https://github.com/neovim/neovim/issues/5096#issuecomment-469027417
       set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
 
