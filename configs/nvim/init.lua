@@ -181,18 +181,6 @@ local plugins = {
     end,
   },
 
-  -- File explorer
-  {
-    "nvim-tree/nvim-tree.lua",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      require("nvim-tree").setup({
-        view = { width = 30 },
-        git = { ignore = false },
-      })
-    end,
-  },
-
   -- Status line
   {
     "nvim-lualine/lualine.nvim",
@@ -567,9 +555,6 @@ local keymap = vim.keymap.set
 keymap("n", "<Esc>", "<cmd>nohlsearch<CR>")
 keymap("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
 keymap("n", "<leader>w", "<cmd>w<CR>", { desc = "Save" })
-
--- File explorer
-keymap("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "Explorer" })
 
 -- Telescope mappings
 keymap("n", "<leader>ff", "<cmd>Telescope find_files<CR>", { desc = "Find files" })
