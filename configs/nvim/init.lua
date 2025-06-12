@@ -420,6 +420,36 @@ local plugins = {
     end,
   },
   {
+    "rcarriga/nvim-notify",
+    config = function()
+      local notify = require("notify")
+
+      -- Set up highlight group customization
+      local notify_hl = vim.api.nvim_create_augroup("NotifyHighlights", {})
+      vim.api.nvim_clear_autocmds({ group = notify_hl })
+      vim.api.nvim_create_autocmd("BufEnter", {
+        group = notify_hl,
+        desc = "redefinition of notify icon colours",
+        callback = function()
+          vim.api.nvim_set_hl(0, "NotifyINFOIcon", {})
+          vim.api.nvim_set_hl(0, "NotifyINFOIcon", { link = "Character" })
+        end,
+      })
+
+      notify.setup({
+        timeout = 5000,
+        render = "minimal",
+        stages = "fade_in_slide_out",
+        on_open = function(win)
+          local config = vim.api.nvim_win_get_config(win)
+          config.border = "single"
+          config.focusable = false
+          vim.api.nvim_win_set_config(win, config)
+        end,
+      })
+    end,
+  },
+  {
     "frankroeder/parrot.nvim",
     dependencies = { 'ibhagwan/fzf-lua', 'nvim-lua/plenary.nvim' },
     -- optionally include "folke/noice.nvim" or "rcarriga/nvim-notify" for beautiful notifications
@@ -601,8 +631,15 @@ require("lazy").setup(plugins)
 -- Key mappings
 local keymap = vim.keymap.set
 
--- General mappings
-keymap("n", "<Esc>", "<cmd>nohlsearch<CR>")
+-- General mappings - Enhanced Esc mapping to handle both hlsearch and notify
+keymap("n", "<Esc>", function()
+  vim.cmd("nohlsearch")
+  local ok, notify = pcall(require, "notify")
+  if ok then
+    notify.dismiss()
+  end
+end, { desc = "Clear hlsearch and dismiss notify popups" })
+
 keymap("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
 keymap("n", "<leader>w", "<cmd>w<CR>", { desc = "Save" })
 
