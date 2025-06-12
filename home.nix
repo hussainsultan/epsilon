@@ -196,6 +196,7 @@
     docker
     nodejs_24
     yazi
+    codex
   ];
 
   programs.direnv = {
