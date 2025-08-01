@@ -21,6 +21,8 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            # Enable backup for files managed by Home Manager (e.g., .aerospace.toml)
+            home-manager.backupFileExtension = ".bak";
             home-manager.users.hussainsultan = import ./home.nix;
           }
         ];
@@ -33,6 +35,8 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            # Enable backup for files managed by Home Manager (e.g., .aerospace.toml)
+            home-manager.backupFileExtension = ".bak";
             home-manager.users.hussainsultan = import ./home.nix;
           }
         ];
