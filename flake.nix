@@ -17,6 +17,37 @@
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, claude-code }:
     {
+      # Standalone home-manager configuration for non-NixOS Linux
+      homeConfigurations."hussainsultan@lets-pop" = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+          config.allowUnfree = true;
+          overlays = [ claude-code.overlays.default ];
+        };
+        modules = [
+          ./home.nix
+          {
+            home.username = "hussainsultan";
+            home.homeDirectory = "/home/hussainsultan";
+          }
+        ];
+      };
+
+      nixosConfigurations."lets-pop" = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./configuration.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = ".bak";
+            home-manager.users.hussainsultan = import ./home.nix;
+            nixpkgs.config.allowUnfree = true;
+            nixpkgs.overlays = [ claude-code.overlays.default ];
+          }
+        ];
+      };
       darwinConfigurations."lets-mac" = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
         modules = [

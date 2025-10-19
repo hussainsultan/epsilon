@@ -1,7 +1,14 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
+let
+  isDarwin = pkgs.stdenv.isDarwin;
+  isLinux = pkgs.stdenv.isLinux;
+in
 {
-  home.username = "hussainsultan";
-  home.homeDirectory = "/Users/hussainsultan";
+  # These will be overridden by flake configuration
+  home.username = lib.mkDefault "hussainsultan";
+  home.homeDirectory = lib.mkDefault (
+    if isDarwin then "/Users/hussainsultan" else "/home/hussainsultan"
+  );
   home.stateVersion = "23.11";
 
   programs.tmux = {
@@ -192,44 +199,52 @@
     tree
     asciinema
     presenterm
-    colima
-    docker
     nodejs_24
     tailwindcss
     yazi
     codex
+  ] ++ lib.optionals isDarwin [
+    # macOS-specific packages
+    colima
+    docker
     aerospace
+  ] ++ lib.optionals isLinux [
+    # Linux-specific packages
   ];
 
-  # Symlink the AeroSpace.app bundle into ~/Applications
-  home.file."Applications/AeroSpace.app".source = "${pkgs.aerospace}/Applications/AeroSpace.app";
+  # macOS-specific configuration for AeroSpace
+  home.file = lib.mkIf isDarwin {
+    "Applications/AeroSpace.app".source = "${pkgs.aerospace}/Applications/AeroSpace.app";
 
-  home.file."Library/LaunchAgents/com.jakehilborn.aerospace.plist".text = ''
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>com.jakehilborn.aerospace</string>
-      <key>ProgramArguments</key>
-      <array>
-        <!-- Launch the AeroSpace GUI server from the home Applications symlink -->
-        <string>${config.home.homeDirectory}/Applications/AeroSpace.app/Contents/MacOS/AeroSpace</string>
-      </array>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <true/>
-    </dict>
-    </plist>
-  '';
+    "Library/LaunchAgents/com.jakehilborn.aerospace.plist".text = ''
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>com.jakehilborn.aerospace</string>
+        <key>ProgramArguments</key>
+        <array>
+          <!-- Launch the AeroSpace GUI server from the home Applications symlink -->
+          <string>${config.home.homeDirectory}/Applications/AeroSpace.app/Contents/MacOS/AeroSpace</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+      </dict>
+      </plist>
+    '';
 
-  home.activation.setupAerospace = ''
-    /bin/launchctl unload "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist" 2>/dev/null || true
-    /bin/launchctl load   "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist"
-  '';
-  # AeroSpace configuration file
-  home.file.".aerospace.toml".text = builtins.readFile ./configs/aerospace/aerospace.toml;
+    ".aerospace.toml".text = builtins.readFile ./configs/aerospace/aerospace.toml;
+  };
+
+  home.activation = lib.mkIf isDarwin {
+    setupAerospace = ''
+      /bin/launchctl unload "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist" 2>/dev/null || true
+      /bin/launchctl load   "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist"
+    '';
+  };
 
   programs.direnv = {
    enable= true;
