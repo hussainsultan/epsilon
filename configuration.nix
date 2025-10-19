@@ -5,6 +5,8 @@
 
   environment.systemPackages = with pkgs; [
     pkgs.vim
+    # Claude Code CLI from Nix overlay
+    pkgs.claude-code
   ];
   # Determinate nix needs to be told to use nix-darwin
   nix.enable = false;
