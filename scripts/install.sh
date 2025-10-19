@@ -57,10 +57,10 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         # Check if home-manager is already installed
         if ! command -v home-manager &> /dev/null; then
             echo "Installing home-manager standalone..."
-            nix run home-manager/master -- switch --flake "$DOTFILES_DIR#$USERNAME@$HOSTNAME"
+            nix run home-manager/master -- switch --flake "$DOTFILES_DIR#$USERNAME@$HOSTNAME" -b backup
         else
             echo "Rebuilding home-manager configuration..."
-            home-manager switch --flake "$DOTFILES_DIR#$USERNAME@$HOSTNAME"
+            home-manager switch --flake "$DOTFILES_DIR#$USERNAME@$HOSTNAME" -b backup
         fi
 
         echo "✅ Home-manager configuration applied!"
