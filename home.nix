@@ -11,6 +11,9 @@ in
   );
   home.stateVersion = "23.11";
 
+  # Enable compatibility for non-NixOS Linux systems
+  targets.genericLinux.enable = isLinux;
+
   programs.tmux = {
     enable = true;
     prefix = "C-s";
@@ -58,8 +61,8 @@ in
 
       set-environment -g PATH "/run/current-system/sw/bin:${config.home.homeDirectory}/.nix-profile/bin:/etc/profiles/per-user/${config.home.username}/bin:/nix/var/nix/profiles/default/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
-      set-option -g default-command "${pkgs.zsh}/bin/zsh -l"
-      set-option -g default-shell "${pkgs.zsh}/bin/zsh"
+      set-option -g default-command "${if isLinux then pkgs.bash else pkgs.zsh}/bin/${if isLinux then "bash" else "zsh"} -l"
+      set-option -g default-shell "${if isLinux then pkgs.bash else pkgs.zsh}/bin/${if isLinux then "bash" else "zsh"}"
 
       # Update environment variables that should be inherited
       set-option -ga update-environment " NIX_PATH"
@@ -111,9 +114,57 @@ in
   # Add session variables for Nix
   home.sessionVariables = {
     NIX_PATH = "$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels";
+    NIX_LD = lib.mkIf isLinux "${pkgs.stdenv.cc.libc}/lib/ld-linux-x86-64.so.2";
+    NIX_LD_LIBRARY_PATH = lib.mkIf isLinux (lib.makeLibraryPath [
+      pkgs.stdenv.cc.cc
+    ]);
   };
 
-  programs.zsh = {
+  programs.bash = lib.mkIf isLinux {
+    enable = true;
+    shellAliases = {
+      vim= "nvim";
+      cd = "z";
+      ls = "eza --color=always --group-directories-first";
+      ll = "eza -l --color=always --group-directories-first --git";
+      la = "eza -la --color=always --group-directories-first --git";
+      lt = "eza --tree --color=always --group-directories-first";
+      l = "eza -lah --color=always --group-directories-first --git";
+      g = "git";
+      gc = "git commit";
+      gf = "git fetch";
+      gs = "git status";
+      gd = "git diff";
+      gg = "git grep -n";
+      gpo = "git push origin";
+      gco = "git checkout";
+      ga = "git add";
+      gai = "git add -i";
+      gap = "git add -p";
+      gau = "git add -u";
+      gcw = "git commit -m wip";
+      gcm = "git commit -m";
+      gpu = "git push";
+      gpl = "git pull";
+      gdc = "git diff --cached";
+      gds = "git diff --staged";
+      gre = "git checkout --";
+      gus = "git reset HEAD";
+      gla = "git log --graph --oneline --all";
+      gll = "git log --graph --oneline";
+      glp = "git log -p";
+      gls = "git ls-files";
+      grl = "git rebase -i HEAD^^";
+      gwc = "git whatchanged";
+      git-commit-empty-initial-commit = "git commit --allow-empty -m 'initial commit'";
+      gb = "git branch";
+      glog = "git log --oneline --graph --decorate";
+    };
+    historySize = 10000;
+    historyFile = "${config.home.homeDirectory}/.bash_history";
+  };
+
+  programs.zsh = lib.mkIf isDarwin {
     enable = true;
     shellAliases = {
       vim= "nvim";
@@ -167,7 +218,8 @@ in
 
   programs.zoxide = {
     enable = true;
-    enableZshIntegration = true;
+    enableBashIntegration = isLinux;
+    enableZshIntegration = isDarwin;
   };
 
   programs.neovim = {
@@ -202,7 +254,9 @@ in
     nodejs_24
     tailwindcss
     yazi
+    claude-code
     codex
+    nix-ld
   ] ++ lib.optionals isDarwin [
     # macOS-specific packages
     colima
@@ -248,7 +302,8 @@ in
 
   programs.direnv = {
    enable= true;
-   enableZshIntegration= true;
+   enableBashIntegration = isLinux;
+   enableZshIntegration = isDarwin;
   };
 
   programs.home-manager.enable = true;
