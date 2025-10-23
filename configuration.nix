@@ -7,8 +7,6 @@
     pkgs.vim
     # Claude Code CLI from Nix overlay
     pkgs.claude-code
-    # Alacritty is automatically installed to /Applications/Nix Apps/ by nix-darwin
-    pkgs.alacritty
   ];
   # Determinate nix needs to be told to use nix-darwin
   nix.enable = false;
@@ -66,6 +64,8 @@
   system.defaults.NSGlobalDomain = {
     # Enable natural scrolling (default on macOS)
     "com.apple.swipescrolldirection" = true;
+    # Always use dark mode
+    AppleInterfaceStyle = "Dark";
   };
 
   system.configurationRevision = null;

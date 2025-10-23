@@ -264,8 +264,10 @@ in
     nerd-fonts.space-mono
   ] ++ lib.optionals isDarwin [
     # macOS-specific packages
-    # Note: alacritty is installed at system level in configuration.nix for macOS
-    # so it appears in /Applications and is indexed by Spotlight
+    # GUI apps are handled by mac-app-util for Spotlight/Launchpad integration
+    alacritty
+    google-chrome
+    obsidian
     colima
     docker
     aerospace

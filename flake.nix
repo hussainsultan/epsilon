@@ -14,9 +14,11 @@
       url = "github:sadjow/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Mac App Util: Proper .app integration with Spotlight and Launchpad
+    mac-app-util.url = "github:hraban/mac-app-util";
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, claude-code }:
+  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, claude-code, mac-app-util }:
     let
       # Generic darwin configuration that can be used with any hostname
       darwinConfiguration = nix-darwin.lib.darwinSystem {
@@ -24,12 +26,17 @@
         modules = [
           ./configuration.nix
           home-manager.darwinModules.home-manager
+          mac-app-util.darwinModules.default
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             # Enable backup for files managed by Home Manager (e.g., .aerospace.toml)
             home-manager.backupFileExtension = ".bak";
             home-manager.users.hussainsultan = import ./home.nix;
+            # Enable mac-app-util for all users
+            home-manager.sharedModules = [
+              mac-app-util.homeManagerModules.default
+            ];
             # Allow unfree packages (e.g., claude-code has an unfree license)
             nixpkgs.config.allowUnfree = true;
             # Enable Claude Code via overlay
