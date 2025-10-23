@@ -68,5 +68,25 @@
           }
         ];
       };
+
+      # Support hostname with apostrophe
+      darwinConfigurations."HUSSAIN's-MacBook-Pro" = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [
+          ./configuration.nix
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            # Enable backup for files managed by Home Manager (e.g., .aerospace.toml)
+            home-manager.backupFileExtension = ".bak";
+            home-manager.users.hussainsultan = import ./home.nix;
+            # Allow unfree packages (e.g., claude-code has an unfree license)
+            nixpkgs.config.allowUnfree = true;
+            # Enable Claude Code via overlay
+            nixpkgs.overlays = [ claude-code.overlays.default ];
+          }
+        ];
+      };
     };
 }
