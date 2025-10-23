@@ -17,6 +17,27 @@
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, claude-code }:
+    let
+      # Generic darwin configuration that can be used with any hostname
+      darwinConfiguration = nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [
+          ./configuration.nix
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            # Enable backup for files managed by Home Manager (e.g., .aerospace.toml)
+            home-manager.backupFileExtension = ".bak";
+            home-manager.users.hussainsultan = import ./home.nix;
+            # Allow unfree packages (e.g., claude-code has an unfree license)
+            nixpkgs.config.allowUnfree = true;
+            # Enable Claude Code via overlay
+            nixpkgs.overlays = [ claude-code.overlays.default ];
+          }
+        ];
+      };
+    in
     {
       # Standalone home-manager configuration for non-NixOS Linux
       homeConfigurations."hussainsultan@lets-pop" = home-manager.lib.homeManagerConfiguration {
@@ -49,44 +70,8 @@
           }
         ];
       };
-      # Default macOS configuration - will match any hostname passed to it
-      darwinConfigurations."HUSSAINs-MacBook-Pro" = nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        modules = [
-          ./configuration.nix
-          home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            # Enable backup for files managed by Home Manager (e.g., .aerospace.toml)
-            home-manager.backupFileExtension = ".bak";
-            home-manager.users.hussainsultan = import ./home.nix;
-            # Allow unfree packages (e.g., claude-code has an unfree license)
-            nixpkgs.config.allowUnfree = true;
-            # Enable Claude Code via overlay
-            nixpkgs.overlays = [ claude-code.overlays.default ];
-          }
-        ];
-      };
 
-      # Support hostname with apostrophe
-      darwinConfigurations."HUSSAIN's-MacBook-Pro" = nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        modules = [
-          ./configuration.nix
-          home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            # Enable backup for files managed by Home Manager (e.g., .aerospace.toml)
-            home-manager.backupFileExtension = ".bak";
-            home-manager.users.hussainsultan = import ./home.nix;
-            # Allow unfree packages (e.g., claude-code has an unfree license)
-            nixpkgs.config.allowUnfree = true;
-            # Enable Claude Code via overlay
-            nixpkgs.overlays = [ claude-code.overlays.default ];
-          }
-        ];
-      };
+      # Default darwin configuration - works with any Mac hostname
+      darwinConfigurations.default = darwinConfiguration;
     };
 }

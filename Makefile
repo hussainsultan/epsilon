@@ -1,33 +1,34 @@
-# Get the current directory and hostname
+# Get the current directory
 DOTFILES_DIR := $(shell pwd)
 
-# Detect OS and get hostname accordingly
+# Use "default" as the configuration name for darwin systems
+# This allows the same flake to work on any Mac without hardcoding hostnames
 ifeq ($(shell uname),Darwin)
 	RAW_HOSTNAME := $(shell scutil --get ComputerName)
-	HOSTNAME := $(shell scutil --get ComputerName | tr -cd '[:alnum:] -' | tr ' ' '-')
+	FLAKE_CONFIG := default
 else
 	RAW_HOSTNAME := $(shell hostname)
-	HOSTNAME := $(shell hostname)
+	FLAKE_CONFIG := $(shell hostname)
 endif
 
 .PHONY: help install update clean backup diff
 
 help:
 	@echo "Available commands:"
-	@echo "Raw hostname: $(RAW_HOSTNAME)"
-	@echo "Clean hostname: $(HOSTNAME)"
+	@echo "Hostname: $(RAW_HOSTNAME)"
+	@echo "Flake config: $(FLAKE_CONFIG)"
 	@echo "Dotfiles directory: $(DOTFILES_DIR)"
 
 install:
 	@echo "Installing dotfiles..."
-	COMPUTER_NAME="$(HOSTNAME)" scripts/install.sh
+	FLAKE_CONFIG="$(FLAKE_CONFIG)" scripts/install.sh
 
 rebuild:
 ifeq ($(shell uname),Darwin)
 	@echo "Rebuilding nix-darwin configuration..."
-	@echo "Using hostname: $(HOSTNAME)"
+	@echo "Using config: $(FLAKE_CONFIG)"
 	@echo "This requires sudo access for system activation..."
-	sudo darwin-rebuild switch --flake $(DOTFILES_DIR)#$(HOSTNAME)
+	sudo darwin-rebuild switch --flake $(DOTFILES_DIR)#$(FLAKE_CONFIG)
 else ifeq ($(shell test -f /etc/NIXOS && echo nixos),nixos)
 	@echo "Rebuilding NixOS configuration..."
 	@echo "This requires sudo access for system activation..."
