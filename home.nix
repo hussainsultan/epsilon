@@ -257,6 +257,7 @@ in
     yazi
     claude-code
     codex
+    alacritty
   ] ++ lib.optionals isDarwin [
     # macOS-specific packages
     colima
@@ -266,6 +267,9 @@ in
     # Linux-specific packages
     nix-ld
   ];
+
+  # Alacritty configuration
+  xdg.configFile."alacritty/alacritty.yml".source = ./configs/alacritty/alacritty.yml;
 
   # macOS-specific configuration for AeroSpace
   home.file = lib.mkIf isDarwin {
