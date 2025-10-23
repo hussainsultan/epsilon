@@ -274,6 +274,7 @@ in
   # macOS-specific configuration for AeroSpace
   home.file = lib.mkIf isDarwin {
     "Applications/AeroSpace.app".source = "${pkgs.aerospace}/Applications/AeroSpace.app";
+    "Applications/Alacritty.app".source = "${pkgs.alacritty}/Applications/Alacritty.app";
 
     "Library/LaunchAgents/com.jakehilborn.aerospace.plist".text = ''
       <?xml version="1.0" encoding="UTF-8"?>
