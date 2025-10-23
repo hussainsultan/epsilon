@@ -312,6 +312,10 @@ in
       # The app bundle is typically in the Applications subdirectory of the package
       if [ -d "${pkgs.alacritty}/Applications/Alacritty.app" ]; then
         ln -sf "${pkgs.alacritty}/Applications/Alacritty.app" "${config.home.homeDirectory}/Applications/Alacritty.app"
+
+        # Register the app with macOS Launch Services so it appears in Spotlight and Applications
+        /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister \
+          -f "${config.home.homeDirectory}/Applications/Alacritty.app"
       else
         echo "Warning: Alacritty.app not found at expected location in Nix store"
       fi
