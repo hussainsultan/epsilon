@@ -274,7 +274,6 @@ in
   # macOS-specific configuration for AeroSpace
   home.file = lib.mkIf isDarwin {
     "Applications/AeroSpace.app".source = "${pkgs.aerospace}/Applications/AeroSpace.app";
-    "Applications/Alacritty.app".source = "${pkgs.alacritty}/Applications/Alacritty.app";
 
     "Library/LaunchAgents/com.jakehilborn.aerospace.plist".text = ''
       <?xml version="1.0" encoding="UTF-8"?>
@@ -303,6 +302,19 @@ in
     setupAerospace = ''
       /bin/launchctl unload "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist" 2>/dev/null || true
       /bin/launchctl load   "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist"
+    '';
+
+    setupAlacritty = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      # Remove existing Alacritty symlink if it exists
+      rm -rf "${config.home.homeDirectory}/Applications/Alacritty.app"
+
+      # Create symlink to Nix-managed Alacritty
+      # The app bundle is typically in the Applications subdirectory of the package
+      if [ -d "${pkgs.alacritty}/Applications/Alacritty.app" ]; then
+        ln -sf "${pkgs.alacritty}/Applications/Alacritty.app" "${config.home.homeDirectory}/Applications/Alacritty.app"
+      else
+        echo "Warning: Alacritty.app not found at expected location in Nix store"
+      fi
     '';
   };
 
