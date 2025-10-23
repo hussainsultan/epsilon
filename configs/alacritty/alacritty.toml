@@ -24,16 +24,16 @@ history = 5000
 size = 16.0
 
 [font.normal]
-family = "FiraCodeNerdFont"
+family = "FiraCode Nerd Font"
 
 [font.bold]
-family = "FiraCodeNerdFont"
+family = "FiraCode Nerd Font"
 
 [font.italic]
-family = "FiraCodeNerdFont"
+family = "FiraCode Nerd Font"
 
 [font.bold_italic]
-family = "FiraCodeNerdFont"
+family = "FiraCode Nerd Font"
 
 [font.offset]
 x = 0

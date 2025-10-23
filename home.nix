@@ -313,6 +313,38 @@ in
       /bin/launchctl unload "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist" 2>/dev/null || true
       /bin/launchctl load   "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist"
     '';
+
+    # Link Nix-installed fonts to ~/Library/Fonts so GUI apps can find them
+    linkFonts = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      mkdir -p "${config.home.homeDirectory}/Library/Fonts/Nix"
+
+      # Clean up old font links
+      $DRY_RUN_CMD rm -rf "${config.home.homeDirectory}/Library/Fonts/Nix/"*
+
+      # Link all Nerd Fonts from the Nix profile
+      for font_dir in ${pkgs.nerd-fonts.fira-code}/share/fonts/*; do
+        if [ -d "$font_dir" ]; then
+          for font_file in "$font_dir"/*; do
+            if [ -f "$font_file" ]; then
+              $DRY_RUN_CMD ln -sf "$font_file" "${config.home.homeDirectory}/Library/Fonts/Nix/$(basename "$font_file")"
+            fi
+          done
+        fi
+      done
+
+      # Also link other nerd fonts
+      for font_pkg in ${pkgs.nerd-fonts.jetbrains-mono} ${pkgs.nerd-fonts.meslo-lg} ${pkgs.nerd-fonts.space-mono}; do
+        for font_dir in "$font_pkg"/share/fonts/*; do
+          if [ -d "$font_dir" ]; then
+            for font_file in "$font_dir"/*; do
+              if [ -f "$font_file" ]; then
+                $DRY_RUN_CMD ln -sf "$font_file" "${config.home.homeDirectory}/Library/Fonts/Nix/$(basename "$font_file")"
+              fi
+            done
+          fi
+        done
+      done
+    '';
   };
 
   programs.direnv = {

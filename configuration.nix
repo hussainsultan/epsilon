@@ -57,6 +57,9 @@
     mru-spaces = false;
     # Make Dock icons of hidden applications translucent
     showhidden = true;
+
+    # Minimal dock - only show running apps (no persistent apps)
+    persistent-apps = [ ];
   };
 
   # Additional macOS system defaults
