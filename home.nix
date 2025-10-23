@@ -257,19 +257,29 @@ in
     yazi
     claude-code
     codex
-    alacritty
+    # Nerd Fonts - patched fonts with additional glyphs for icons/symbols
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.fira-code
+    nerd-fonts.meslo-lg
+    nerd-fonts.space-mono
   ] ++ lib.optionals isDarwin [
     # macOS-specific packages
+    # Note: alacritty is installed at system level in configuration.nix for macOS
+    # so it appears in /Applications and is indexed by Spotlight
     colima
     docker
     aerospace
   ] ++ lib.optionals isLinux [
     # Linux-specific packages
     nix-ld
+    alacritty
   ];
 
-  # Alacritty configuration
-  xdg.configFile."alacritty/alacritty.yml".source = ./configs/alacritty/alacritty.yml;
+  # Enable font configuration
+  fonts.fontconfig.enable = true;
+
+  # Alacritty configuration (TOML format)
+  xdg.configFile."alacritty/alacritty.toml".source = ./configs/alacritty/alacritty.toml;
 
   # macOS-specific configuration for AeroSpace
   home.file = lib.mkIf isDarwin {
@@ -302,23 +312,6 @@ in
     setupAerospace = ''
       /bin/launchctl unload "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist" 2>/dev/null || true
       /bin/launchctl load   "${config.home.homeDirectory}/Library/LaunchAgents/com.jakehilborn.aerospace.plist"
-    '';
-
-    setupAlacritty = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      # Remove existing Alacritty symlink if it exists
-      rm -rf "${config.home.homeDirectory}/Applications/Alacritty.app"
-
-      # Create symlink to Nix-managed Alacritty
-      # The app bundle is typically in the Applications subdirectory of the package
-      if [ -d "${pkgs.alacritty}/Applications/Alacritty.app" ]; then
-        ln -sf "${pkgs.alacritty}/Applications/Alacritty.app" "${config.home.homeDirectory}/Applications/Alacritty.app"
-
-        # Register the app with macOS Launch Services so it appears in Spotlight and Applications
-        /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister \
-          -f "${config.home.homeDirectory}/Applications/Alacritty.app"
-      else
-        echo "Warning: Alacritty.app not found at expected location in Nix store"
-      fi
     '';
   };
 

@@ -1,0 +1,76 @@
+# Alacritty Configuration (TOML format)
+
+[env]
+TERM = "xterm-256color"
+
+[window]
+opacity = 1.0
+dynamic_padding = false
+option_as_alt = "Both"
+title = "Alacritty"
+
+[window.dimensions]
+columns = 75
+lines = 25
+
+[window.class]
+instance = "Alacritty"
+general = "Alacritty"
+
+[scrolling]
+history = 5000
+
+[font]
+size = 16.0
+
+[font.normal]
+family = "FiraCodeNerdFont"
+
+[font.bold]
+family = "FiraCodeNerdFont"
+
+[font.italic]
+family = "FiraCodeNerdFont"
+
+[font.bold_italic]
+family = "FiraCodeNerdFont"
+
+[font.offset]
+x = 0
+y = 1
+
+# Lunar theme (Tokyo Night inspired)
+[colors.primary]
+background = "#1a1b26"
+foreground = "#c0caf5"
+
+[colors.cursor]
+text = "CellBackground"
+cursor = "#528bff"
+
+[colors.selection]
+text = "CellForeground"
+background = "#292e42"
+
+[colors.normal]
+black   = "#1c1f24"
+red     = "#ff6c6b"
+green   = "#98be65"
+yellow  = "#da8548"
+blue    = "#51afef"
+magenta = "#c678dd"
+cyan    = "#5699af"
+white   = "#202328"
+
+[colors.bright]
+black   = "#5b6268"
+red     = "#da8548"
+green   = "#4db5bd"
+yellow  = "#ecbe7b"
+blue    = "#3071db"
+magenta = "#a9a1e1"
+cyan    = "#46d9ff"
+white   = "#dfdfdf"
+
+[colors]
+draw_bold_text_with_bright_colors = true
