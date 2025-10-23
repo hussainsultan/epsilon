@@ -4,7 +4,7 @@ DOTFILES_DIR := $(shell pwd)
 # Detect OS and get hostname accordingly
 ifeq ($(shell uname),Darwin)
 	RAW_HOSTNAME := $(shell scutil --get ComputerName)
-	HOSTNAME := $(shell scutil --get ComputerName | sed "s/'//g" | tr ' ' '-')
+	HOSTNAME := $(shell scutil --get ComputerName | tr -cd '[:alnum:] -' | tr ' ' '-')
 else
 	RAW_HOSTNAME := $(shell hostname)
 	HOSTNAME := $(shell hostname)
@@ -25,8 +25,9 @@ install:
 rebuild:
 ifeq ($(shell uname),Darwin)
 	@echo "Rebuilding nix-darwin configuration..."
+	@echo "Using hostname: $(HOSTNAME)"
 	@echo "This requires sudo access for system activation..."
-	COMPUTER_NAME="$(HOSTNAME)" sudo darwin-rebuild switch --flake $(DOTFILES_DIR)
+	sudo darwin-rebuild switch --flake $(DOTFILES_DIR)#$(HOSTNAME)
 else ifeq ($(shell test -f /etc/NIXOS && echo nixos),nixos)
 	@echo "Rebuilding NixOS configuration..."
 	@echo "This requires sudo access for system activation..."

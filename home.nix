@@ -114,10 +114,11 @@ in
   # Add session variables for Nix
   home.sessionVariables = {
     NIX_PATH = "$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels";
-    NIX_LD = lib.mkIf isLinux "${pkgs.stdenv.cc.libc}/lib/ld-linux-x86-64.so.2";
-    NIX_LD_LIBRARY_PATH = lib.mkIf isLinux (lib.makeLibraryPath [
+  } // lib.optionalAttrs isLinux {
+    NIX_LD = "${pkgs.stdenv.cc.libc}/lib/ld-linux-x86-64.so.2";
+    NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
       pkgs.stdenv.cc.cc
-    ]);
+    ];
   };
 
   programs.bash = lib.mkIf isLinux {
@@ -256,7 +257,6 @@ in
     yazi
     claude-code
     codex
-    nix-ld
   ] ++ lib.optionals isDarwin [
     # macOS-specific packages
     colima
@@ -264,6 +264,7 @@ in
     aerospace
   ] ++ lib.optionals isLinux [
     # Linux-specific packages
+    nix-ld
   ];
 
   # macOS-specific configuration for AeroSpace

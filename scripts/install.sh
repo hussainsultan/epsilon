@@ -18,15 +18,20 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         exit 1
     fi
 
+    # Get the hostname for the flake configuration
+    HOSTNAME="${COMPUTER_NAME:-$(scutil --get ComputerName | tr -cd '[:alnum:] -' | tr ' ' '-')}"
+
     # Check if nix-darwin is already installed
     if ! command -v darwin-rebuild &> /dev/null; then
         echo "Installing nix-darwin..."
+        echo "Using hostname: $HOSTNAME"
         echo "This will require sudo access for system activation..."
-        sudo nix run nix-darwin --extra-experimental-features nix-command  --extra-experimental-features flakes -- switch --flake "$DOTFILES_DIR"
+        sudo nix run nix-darwin --extra-experimental-features nix-command  --extra-experimental-features flakes -- switch --flake "$DOTFILES_DIR#$HOSTNAME"
     else
         echo "Rebuilding darwin configuration..."
+        echo "Using hostname: $HOSTNAME"
         echo "This will require sudo access for system activation..."
-        sudo darwin-rebuild switch --flake "$DOTFILES_DIR"
+        sudo darwin-rebuild switch --flake "$DOTFILES_DIR#$HOSTNAME"
     fi
 
     echo "✅ Darwin configuration applied!"
