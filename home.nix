@@ -114,6 +114,9 @@ in
   # Add session variables for Nix
   home.sessionVariables = {
     NIX_PATH = "$HOME/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels";
+  } // lib.optionalAttrs isDarwin {
+    # Use Secretive for SSH authentication on macOS
+    SSH_AUTH_SOCK = "/Users/hussainsultan/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh";
   } // lib.optionalAttrs isLinux {
     NIX_LD = "${pkgs.stdenv.cc.libc}/lib/ld-linux-x86-64.so.2";
     NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
