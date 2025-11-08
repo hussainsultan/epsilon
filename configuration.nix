@@ -28,6 +28,9 @@
 
   };
 
+  # Enable Tailscale VPN service
+  services.tailscale.enable = true;
+
   programs.zsh.enable = true;
 
   # Set primary user for user-specific system defaults
@@ -64,7 +67,7 @@
   system.defaults.NSGlobalDomain = {
     # Enable natural scrolling (default on macOS)
     "com.apple.swipescrolldirection" = true;
-    # Always use dark mode
+    # Force dark mode
     AppleInterfaceStyle = "Dark";
   };
 

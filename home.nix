@@ -268,6 +268,10 @@ in
     alacritty
     google-chrome
     obsidian
+    slack
+    discord
+    zoom-us
+    tailscale
     colima
     docker
     aerospace
